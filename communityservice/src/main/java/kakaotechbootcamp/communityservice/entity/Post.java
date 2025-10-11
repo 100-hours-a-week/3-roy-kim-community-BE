@@ -31,8 +31,8 @@ public class Post {
     @Column(name = "is_edited", nullable = false)
     private boolean isEdited = false;                                               // 기본적으로 거짓으로 설정
 
-//    @OneToMany (mappedBy = "post", fetch = FetchType.LAZY)
-//    private List<Comment> comments = new ArrayList<>();
+    @OneToMany (mappedBy = "post", fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
 
     protected Post() {}
 
@@ -48,11 +48,11 @@ public class Post {
     void setAuthor(User author) {
         this.author = author;
     }
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+        comment.setPost(this);
+    }
 
-//    public void addComment(Comment comment) {
-//        comments.add(comment);
-//        comment.setPost(this);
-//    }
 
 
 }

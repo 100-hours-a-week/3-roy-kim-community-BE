@@ -29,8 +29,8 @@ public class User {
     @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-//    @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
-//    private List<Comment> comments = new ArrayList<>();
+    @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
 
 
     protected User() {}
@@ -44,21 +44,19 @@ public class User {
 
     // 편의 메서드 (양방향 연관관계 일관성 유지)
     public void addPost(Post post) {
-        if (post == null) return;
         this.posts.add(post);
         post.setAuthor(this);
     }
 
-//    public void addComment(Comment comment) {
-//        if (comment == null) return;
-//        this.comments.add(comment);
-//        comment.setAuthor(this);
-//    }
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+        comment.setAuthor(this);
+    }
 
 
     public void removePost(Post post) {
-        if (post == null) return;
         this.posts.remove(post);
+        post.setAuthor(null);
     }
 
 
