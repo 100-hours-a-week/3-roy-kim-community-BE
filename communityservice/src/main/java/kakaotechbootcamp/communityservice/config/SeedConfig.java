@@ -30,7 +30,7 @@ public class SeedConfig {
         if (userRepository.count() >= 10 && postRepository.count() >= 10) return;
 
         IntStream.rangeClosed(1, 10).forEach(i -> {
-            User user = new User("tester" + i + "@gmail.com", "1q2w3e4r!" + i, "tester" + i, "http://image.com/test_image" + i + ".png");
+            User user = new User("tester" + i + "@gmail.com", "1Q2w3e4r!" + i, "tester" + i, "http://image.com/test_image" + i + ".png");
             userRepository.save(user);
 
             Post post = new Post(user, "title"+i, "content"+i);
