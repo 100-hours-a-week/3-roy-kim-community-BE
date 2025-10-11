@@ -23,6 +23,8 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;                                      // 사용자 비밀번호
 
+    @Transient
+    private String checkPassword;
     @Column(name = "profile_picture", nullable = true)
     private String profilePicture;                                // 사용자 프로필 사진 URL
 
@@ -35,6 +37,14 @@ public class User {
     public User(String email,String password, String nickname, String profilePicture) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
+        this.profilePicture = profilePicture;
+    }
+
+    public User(String email,String password, String checkPassword, String nickname, String profilePicture) {
+        this.email = email;
+        this.password = password;
+        this.checkPassword = checkPassword;
         this.nickname = nickname;
         this.profilePicture = profilePicture;
     }
