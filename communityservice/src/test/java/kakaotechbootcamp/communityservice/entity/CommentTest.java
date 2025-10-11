@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 public class CommentTest {
@@ -16,9 +15,9 @@ public class CommentTest {
     @Test
     @Rollback(false)
     void commentTest(){
-        User user = new User("tester", "test@gmail.com", "1q2w3e4r!", "http://image.com/imagepath/image.jpg" );
+        User user = new User("test@gmail.com", , "1q2w3e4r!", "http://image.com/imagepath/image.jpg");
         entityManager.persist(user);
-        User replier = new User("tester2", "test2@gmail.com", "1q2w3e4r!", "http://image.com/imagepath/image2.jpg" );
+        User replier = new User("test2@gmail.com", , "1q2w3e4r!", "http://image.com/imagepath/image2.jpg");
         entityManager.persist(replier);
 
         Post post = new Post(user, "게시글", "게시글 내용입니다");

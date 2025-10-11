@@ -23,7 +23,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;                                      // 사용자 비밀번호
 
-    @Column(name = "profile_picture", nullable = false)
+    @Column(name = "profile_picture", nullable = true)
     private String profilePicture;                                // 사용자 프로필 사진 URL
 
     @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
@@ -32,10 +32,10 @@ public class User {
 
     protected User() {}
 
-    public User(String nickname, String email, String password, String profilePicture) {
-        this.nickname = nickname;
+    public User(String email,String password, String nickname, String profilePicture) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
         this.profilePicture = profilePicture;
     }
 
