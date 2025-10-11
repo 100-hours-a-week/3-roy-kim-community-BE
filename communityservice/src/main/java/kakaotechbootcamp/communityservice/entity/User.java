@@ -23,42 +23,31 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;                                      // 사용자 비밀번호
 
-    @Column(name = "profile_picture", nullable = false)
+    @Column(name = "profile_picture", nullable = true)
     private String profilePicture;                                // 사용자 프로필 사진 URL
 
     @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-//    @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
-//    private List<Comment> comments = new ArrayList<>();
-
 
     protected User() {}
 
-    public User(String nickname, String email, String password, String profilePicture) {
-        this.nickname = nickname;
+    public User(String email,String password, String nickname, String profilePicture) {
         this.email = email;
         this.password = password;
+        this.nickname = nickname;
         this.profilePicture = profilePicture;
     }
 
     // 편의 메서드 (양방향 연관관계 일관성 유지)
     public void addPost(Post post) {
-        if (post == null) return;
         this.posts.add(post);
         post.setAuthor(this);
     }
 
-//    public void addComment(Comment comment) {
-//        if (comment == null) return;
-//        this.comments.add(comment);
-//        comment.setAuthor(this);
-//    }
-
-
     public void removePost(Post post) {
-        if (post == null) return;
         this.posts.remove(post);
+        post.setAuthor(null);
     }
 
 
