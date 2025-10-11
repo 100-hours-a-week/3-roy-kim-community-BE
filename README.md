@@ -1,1 +1,0 @@
-# 3-roy-kim-community
