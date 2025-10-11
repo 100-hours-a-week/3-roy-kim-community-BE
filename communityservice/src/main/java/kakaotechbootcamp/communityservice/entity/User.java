@@ -29,9 +29,6 @@ public class User {
     @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
     private List<Post> posts = new ArrayList<>();
 
-    @OneToMany (mappedBy = "author", fetch = FetchType.LAZY)
-    private List<Comment> comments = new ArrayList<>();
-
 
     protected User() {}
 
@@ -47,12 +44,6 @@ public class User {
         this.posts.add(post);
         post.setAuthor(this);
     }
-
-    public void addComment(Comment comment) {
-        this.comments.add(comment);
-        comment.setAuthor(this);
-    }
-
 
     public void removePost(Post post) {
         this.posts.remove(post);

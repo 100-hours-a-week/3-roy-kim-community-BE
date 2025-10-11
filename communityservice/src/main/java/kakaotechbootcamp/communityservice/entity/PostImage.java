@@ -26,4 +26,7 @@ public class PostImage {
         this.post = post;
     }
 
+    void setPost(Post post) {
+        this.post = post;
+    }
 }
