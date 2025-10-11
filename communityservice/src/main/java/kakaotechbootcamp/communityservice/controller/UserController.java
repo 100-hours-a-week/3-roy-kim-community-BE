@@ -16,7 +16,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserResponse create(@RequestBody CreateUserRequest request){
-        User saved = userService.signUp(request.getEmail(), request.getPassword(),request.getNickname(), request.getProfilePicture());
+        User saved = userService.signUp(request.getEmail(), request.getPassword(), request.getPasswordCheck(), request.getNickname(), request.getProfilePicture());
         return UserResponse.of(saved);
     }
 
@@ -40,6 +40,7 @@ public class UserController {
     public static class CreateUserRequest {
         private String email;
         private String password;
+        private String passwordCheck;
         private String nickname;
         private String profilePicture;
     }
