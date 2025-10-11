@@ -1,5 +1,8 @@
 package kakaotechbootcamp.communityservice.service;
 
+import kakaotechbootcamp.communityservice.exception.BadRequestException;
+import kakaotechbootcamp.communityservice.exception.ConflictException;
+import kakaotechbootcamp.communityservice.exception.UnprocessableEntityException;
 import org.springframework.transaction.annotation.Transactional;
 import kakaotechbootcamp.communityservice.entity.User;
 import kakaotechbootcamp.communityservice.repository.UserRepository;
@@ -17,13 +20,30 @@ public class UserService {
         User user = new User(email, password, passwordCheck, nickname, profilePicture);
         if (!password.equals(passwordCheck)) {
 //            비밀번호 확인이 일치해야함
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+            throw new UnprocessableEntityException("비밀번호 확인과 다릅니다");
+
         }
         // 비밀번호 형식 검증: 8~20자, 대문자/소문자/숫자/특수문자 각각 최소 1개 포함
         String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
         if (!password.matches(passwordPattern)) {
-            throw new IllegalArgumentException("비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.");
+            throw new BadRequestException("비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.");
         }
+        if (email == null || email.isBlank())
+            throw new BadRequestException("올바른 이메일 주소 형식을 입력해주세요 (예: example@example.com)");
+        if (password == null || password.isBlank())
+            throw new BadRequestException("비밀번호를 입력해주세요");
+        if (passwordCheck == null || passwordCheck.isBlank())
+            throw new BadRequestException("비밀번호를 한번더 입력해주세요");
+        if (nickname == null || nickname.isBlank())
+            throw new BadRequestException("닉네임을 입력해주세요");
+        if (nickname.length() > 10)
+            throw new BadRequestException("닉네임은 최대 10자 까지 작성 가능합니다");
+        if (nickname.chars().anyMatch(Character::isWhitespace))
+            throw new BadRequestException("띄어쓰기를 없애주세요");
+        if (userRepository.existsByEmail(email))
+            throw new ConflictException("중복된 이메일입니다");
+        if (userRepository.existsByNickname(nickname))
+            throw new ConflictException("중복된 닉네임입니다");
         return userRepository.save(user);
     }
 
