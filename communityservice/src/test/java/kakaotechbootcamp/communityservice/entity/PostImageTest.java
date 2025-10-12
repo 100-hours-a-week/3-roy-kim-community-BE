@@ -15,7 +15,7 @@ class PostImageTest {
     @Test
     @Rollback(false)
     void postImageTest(){
-        User user = new User("test@gmail.com", , "1q2w3e4r!", "http://image.com/imagepath/image.jpg");
+        User user = new User("test@gmail.com", "1q2w3e4r!", "tester", "http://image.com/imagepath/image.jpg");
         entityManager.persist(user);
         Post post = new Post(user, "게시글", "게시글 내용입니다");
         user.addPost(post);

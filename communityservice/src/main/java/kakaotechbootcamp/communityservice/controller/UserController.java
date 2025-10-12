@@ -1,9 +1,11 @@
 package kakaotechbootcamp.communityservice.controller;
 
+import kakaotechbootcamp.communityservice.dto.*;
 import kakaotechbootcamp.communityservice.entity.User;
 import kakaotechbootcamp.communityservice.service.UserService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
@@ -20,6 +22,12 @@ public class UserController {
         return UserResponse.of(saved);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest){
+        String loginResult = userService.login(loginRequest);
+        return ResponseEntity.ok(loginResult);
+
+    }
     @GetMapping(("/{id}"))
     public UserResponse findById(@PathVariable Long id){
         return UserResponse.of(userService.findById(id));
@@ -73,4 +81,10 @@ public class UserController {
         private String nickname;
         private String profilePicture;
     }
+
+//    @Data
+//    public static class LoginRequest {
+//        private String email;
+//        private String password;
+//    }
 }
