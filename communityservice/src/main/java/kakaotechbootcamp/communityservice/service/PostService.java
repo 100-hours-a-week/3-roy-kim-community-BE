@@ -37,6 +37,7 @@ public class PostService {
         if (content != null) {
             post.setContent(content);
         }
+        post.setEdited(true);
         return post;
     }
 //    게시글 삭제
