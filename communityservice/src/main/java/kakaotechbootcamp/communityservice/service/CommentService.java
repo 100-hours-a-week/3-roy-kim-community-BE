@@ -21,7 +21,7 @@ public class CommentService {
 
     @Transactional
     public Comment create (Long postId, Long authorId, String content) {
-        if (content == null || content.length() == 0) {
+        if (content == null) {
             throw new BadRequestException("댓글 내용을 입력하세요");
         }
         Post post = postRepository.findById(postId).orElseThrow(() -> new BadRequestException("없는 게시물"));
@@ -30,24 +30,27 @@ public class CommentService {
         Comment comment = new Comment(post, author, content);
         return commentRepository.save(comment);
     }
-    public Comment findById(Long id) {
-        return commentRepository.findById(id)
-                .orElseThrow(() -> new BadRequestException("게시글을 찾을 수 없습니다"));
+    public Comment findByPostAndId(Long postId, Long commentId) {
+        Comment c = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BadRequestException("게시글 없음"));
+        if (!c.getPost().getId().equals(postId))
+            throw new BadRequestException("게시글 없음");
+        return c;
     }
     @Transactional
-    public Comment update(Long id, String content) {
+    public Comment update(Long postId, Long commentId,  String content) {
         if (content == null || content.isBlank())
             throw new BadRequestException("내용을 입력해주세요");
 
-        Comment comment = findById(id);
+        Comment comment = findByPostAndId(postId, commentId);
         comment.setContent(content);
         comment.setEdited(true); // 수정 플래그
         return comment;
     }
     @Transactional
-    public void delete(Long id) {
-        if (!commentRepository.existsById(id))
+    public void delete(Long commentId) {
+        if (!commentRepository.existsById(commentId))
             throw new BadRequestException("게시글을 찾을 수 없습니다");
-        commentRepository.deleteById(id);
+        commentRepository.deleteById(commentId);
     }
 }
