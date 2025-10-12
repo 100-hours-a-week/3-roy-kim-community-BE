@@ -15,7 +15,7 @@ public class PostTest {
     @Test
     @Rollback(false)
     void oneToManyTest(){
-        User user = new User("test@gmail.com", , "1q2w3e4r!", "http://image.com/imagepath/image.jpg");
+        User user = new User("test@gmail.com", "1q2w3e4r!", "tester", "http://image.com/imagepath/image.jpg");
         entityManager.persist(user);
 
         Post post = new Post(user, "게시글", "게시글 내용입니다");
@@ -26,7 +26,12 @@ public class PostTest {
         user.addPost(post1);
         user.addPost(post2);
 
+        user.addPost(post);
+        user.addPost(post1);
+        user.addPost(post2);
         entityManager.persist(post);
+        entityManager.persist(post1);
+        entityManager.persist(post2);
         entityManager.persist(post1);
         entityManager.persist(post2);
 

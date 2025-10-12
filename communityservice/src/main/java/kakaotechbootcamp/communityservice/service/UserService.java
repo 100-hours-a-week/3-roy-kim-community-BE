@@ -1,5 +1,7 @@
 package kakaotechbootcamp.communityservice.service;
 
+import kakaotechbootcamp.communityservice.controller.UserController;
+import kakaotechbootcamp.communityservice.dto.LoginRequest;
 import kakaotechbootcamp.communityservice.exception.BadRequestException;
 import kakaotechbootcamp.communityservice.exception.ConflictException;
 import kakaotechbootcamp.communityservice.exception.UnprocessableEntityException;
@@ -45,6 +47,15 @@ public class UserService {
         if (userRepository.existsByNickname(nickname))
             throw new ConflictException("중복된 닉네임입니다");
         return userRepository.save(user);
+    }
+
+    public String login (LoginRequest loginRequest) {
+        User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new BadRequestException("이메일을 확인해주세요"));
+
+        if(!user.getPassword().equals(loginRequest.getPassword())){
+            throw new BadRequestException("비밀번호를 확인해주세요");
+        }
+        return "로그인 성공";
     }
 
     public User findById(Long id) {
