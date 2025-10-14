@@ -42,6 +42,7 @@ public class PostController {
 
     @Data
     public static class CreatePostRequest {
+        public Object postImage;
         private Long authorId;
         private String title;
         private String content;
