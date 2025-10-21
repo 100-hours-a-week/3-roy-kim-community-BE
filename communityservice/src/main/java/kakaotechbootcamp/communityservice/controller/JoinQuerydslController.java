@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+@CrossOrigin(origins = {
+        "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5500", "http://localhost"
+})
 @RestController
 @RequestMapping("/board")
 public class JoinQuerydslController {

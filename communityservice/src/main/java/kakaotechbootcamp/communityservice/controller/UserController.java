@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
+
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5500", "http://localhost"}, methods = {RequestMethod.POST, RequestMethod.OPTIONS}, allowedHeaders = "*")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -16,7 +19,7 @@ public class UserController {
     private final UserService userService;
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
+    @PostMapping("signup")
     public UserResponse create(@RequestBody CreateUserRequest request){
         User saved = userService.signUp(request.getEmail(), request.getPassword(), request.getPasswordCheck(), request.getNickname(), request.getProfilePicture());
         return UserResponse.of(saved);
@@ -26,7 +29,6 @@ public class UserController {
     public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest){
         String loginResult = userService.login(loginRequest);
         return ResponseEntity.ok(loginResult);
-
     }
     @GetMapping(("/{id}"))
     public UserResponse findById(@PathVariable Long id){
