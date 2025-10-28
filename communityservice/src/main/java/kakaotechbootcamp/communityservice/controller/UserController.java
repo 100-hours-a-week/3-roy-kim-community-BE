@@ -1,5 +1,6 @@
 package kakaotechbootcamp.communityservice.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import kakaotechbootcamp.communityservice.dto.*;
 import kakaotechbootcamp.communityservice.entity.User;
 import kakaotechbootcamp.communityservice.repository.UserRepository;
@@ -32,9 +33,34 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest, HttpServletRequest request) {
         String loginResult = userService.login(loginRequest);
+        // Note: 세션 로드 혹은 생성
+        User user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("에러 메시지"));
+        var session = request.getSession(true);
+        session.setAttribute("uid", user.getId());
         return ResponseEntity.ok(loginResult);
+    }
+
+    // 사용자 정보 세션 기반으로 조회, 현재 새션을 검증하기 위해 사용
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> me(HttpServletRequest request) {
+        var session = request.getSession(false);
+        if (session == null || session.getAttribute("uid") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        Long uid = (Long) session.getAttribute("uid");
+        User user = userService.findById(uid);
+        return ResponseEntity.ok(UserResponse.of(user));
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        var session = request.getSession(false);
+        if (session!=null) {
+            session.invalidate();
+        }
+        return ResponseEntity.ok("로그아웃 성공");
     }
 
     @GetMapping(("/{id}"))
