@@ -4,6 +4,21 @@ spring:
     username: root
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
+      cleanup-cron: "0 */1 * * * *"             # 1분 마다 기한 지난 세션 청소
+    timeout: 300s                               # 5 분
+server:
+  servlet:
+    session:
+      cookie:
+        name: SID                   # cookie name (default is "SESSION")
+        http-only: true
+        secure: false               # set true in HTTPS
+        same-site: Lax
+      tracking-modes: cookie
 
   jpa:
     hibernate:
@@ -12,6 +27,7 @@ spring:
       hibernate:
         format_sql: true
         use_sql_comments: true
+
 
   profiles:
     active: dev
