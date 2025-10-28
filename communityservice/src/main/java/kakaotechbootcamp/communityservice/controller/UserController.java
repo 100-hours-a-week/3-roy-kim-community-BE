@@ -51,6 +51,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         Long uid = (Long) session.getAttribute("uid");
+        String email = (String) session.getAttribute("email");
         User user = userService.findById(uid);
         return ResponseEntity.ok(UserResponse.of(user));
     }

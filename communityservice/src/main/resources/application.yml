@@ -7,19 +7,8 @@ spring:
   session:
     store-type: jdbc
     jdbc:
-      initialize-schema: always
-      cleanup-cron: "0 */1 * * * *"             # 1분 마다 기한 지난 세션 청소
-    timeout: 300s                               # 5 분
-server:
-  servlet:
-    session:
-      cookie:
-        name: SID                   # cookie name (default is "SESSION")
-        http-only: true
-        secure: false               # set true in HTTPS
-        same-site: Lax
-      tracking-modes: cookie
-
+      initialize-schema: always     # create SPRING_SESSION tables if missing
+    timeout: 300s                                 # 5 분
   jpa:
     hibernate:
       ddl-auto: create   # 개발 중에는 create / create-drop / update 중 선택
@@ -27,10 +16,17 @@ server:
       hibernate:
         format_sql: true
         use_sql_comments: true
-
-
   profiles:
     active: dev
+server:
+  servlet:
+    session:
+      cookie:
+        name: SID
+        http-only: true
+        secure: false               # set true in HTTPS
+        same-site: Lax
+      tracking-modes: cookie
 
 logging:
   level:
