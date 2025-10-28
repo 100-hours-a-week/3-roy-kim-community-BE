@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.CrossOrigin;
         methods = {RequestMethod.POST,
                 RequestMethod.GET,
                 RequestMethod.OPTIONS},
-        allowedHeaders = "*")
+        allowedHeaders = "*",
+        allowCredentials = "true" // 쿠키 포함 요청 막힘 방지
+)
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
