@@ -21,11 +21,11 @@ import java.util.UUID;
 public class JwtProvider {
     // 서명 키 설정
     private final Key key = Keys.hmacShaKeyFor(
-            Base64.getDecoder().decode("Z2tzd2xkbmdrc3dsZG5na3N3bGRu")
+            Base64.getDecoder().decode("YWRhcHRlcnphZGFwdGVyemFkYXB0ZXJ6YWRhcHRlcnphZGFwdGVyeg==")
     );
 
     // access Token 생성
-    public String createAccessToken(Long userId, String role) {
+    public String createAccessToken(Long userId) {
         long accessTtlSec = 15 * 60;
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
