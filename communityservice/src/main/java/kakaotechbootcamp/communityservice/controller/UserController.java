@@ -22,7 +22,8 @@ import java.util.Map;
         methods = {RequestMethod.POST,
                 RequestMethod.GET,
                 RequestMethod.OPTIONS},
-        allowedHeaders = "*")
+        allowedHeaders = "*",
+        allowCredentials = "true")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
