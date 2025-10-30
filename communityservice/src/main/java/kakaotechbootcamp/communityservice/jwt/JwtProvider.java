@@ -26,7 +26,7 @@ public class JwtProvider {
 
     // access Token 생성
     public String createAccessToken(Long userId, String role) {
-        long accessTtlSec = 30 * 60;
+        long accessTtlSec = 15 * 60;
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date())
