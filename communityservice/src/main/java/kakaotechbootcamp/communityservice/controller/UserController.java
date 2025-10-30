@@ -22,7 +22,9 @@ import java.util.Map;
         methods = {RequestMethod.POST,
                 RequestMethod.GET,
                 RequestMethod.OPTIONS},
-        allowedHeaders = "*")
+        allowedHeaders = "*",
+        allowCredentials = "true" // 쿠키 포함 요청 막힘 방지
+)
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -43,11 +45,12 @@ public class UserController {
         return ResponseEntity.ok(loginResult);
     }
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response) {
-        userService.logout(response);
-        return ResponseEntity.ok("로그아웃 성공");
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        Long userId = (Long) request.getAttribute("userId");
+        userService.logout(userId, response);
+        return ResponseEntity.noContent().build();
     }
-    @PostMapping("refresh")
+    @PostMapping("/refresh")
     @ResponseBody
     public Map<String, String> refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) {

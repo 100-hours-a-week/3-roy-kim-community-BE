@@ -50,11 +50,12 @@ public class UserService {
         return tokenResponse.accessToken();
     }
     @Transactional
-    public void logout(HttpServletResponse response) {
-        addTokenCookie(response, "accessToken", null, 0);
-        addTokenCookie(response, "refreshToken", null, 0);
+    public void logout(Long userId, HttpServletResponse response) {
+        if (userId != null) {
+            refreshTokenRepository.deleteByUserId(userId);
+        }
     }
-
+    @Transactional
     public TokenResponse refreshTokens(String refreshToken, HttpServletResponse response) {
         var parsedRefreshToken = jwtProvider.parse(refreshToken);
 
@@ -66,6 +67,10 @@ public class UserService {
         String newAccessToken = jwtProvider.createAccessToken(entity.getUserId());
         String newRefreshToken = jwtProvider.createRefreshToken(entity.getUserId());
 
+        entity.setToken(newRefreshToken);
+        entity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
+        entity.setRevoked(false);
+        refreshTokenRepository.save(entity);
 
         addTokenCookie(response, "accessToken", newAccessToken, ACCESS_TOKEN_VALIDITY_SECONDS);
         addTokenCookie(response, "refreshToken", newRefreshToken, REFRESH_TOKEN_VALIDITY_SECONDS);
@@ -115,7 +120,10 @@ public class UserService {
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
 
-        RefreshToken refreshEntity = new RefreshToken();
+        RefreshToken refreshEntity = refreshTokenRepository
+                .findByUserId(user.getId())
+                .orElseGet(RefreshToken::new);
+
         refreshEntity.setUserId(user.getId());
         refreshEntity.setToken(refreshToken);
         refreshEntity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
