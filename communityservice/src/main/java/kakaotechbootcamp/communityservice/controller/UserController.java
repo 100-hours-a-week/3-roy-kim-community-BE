@@ -48,7 +48,8 @@ public class UserController {
         userService.logout(response);
         return ResponseEntity.ok("로그아웃 성공");
     }
-    @PostMapping("refresh")
+
+    @PostMapping("/refresh")
     @ResponseBody
     public Map<String, String> refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken, HttpServletResponse response) {
         if (refreshToken == null) {

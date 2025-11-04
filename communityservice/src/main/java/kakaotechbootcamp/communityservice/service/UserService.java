@@ -1,6 +1,5 @@
 package kakaotechbootcamp.communityservice.service;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import kakaotechbootcamp.communityservice.dto.LoginRequest;
 import kakaotechbootcamp.communityservice.entity.RefreshToken;
@@ -8,6 +7,7 @@ import kakaotechbootcamp.communityservice.exception.BadRequestException;
 import kakaotechbootcamp.communityservice.exception.UnprocessableEntityException;
 import kakaotechbootcamp.communityservice.jwt.JwtProvider;
 import kakaotechbootcamp.communityservice.repository.RefreshTokenRepository;
+import org.springframework.http.ResponseCookie;
 import org.springframework.transaction.annotation.Transactional;
 import kakaotechbootcamp.communityservice.entity.User;
 import kakaotechbootcamp.communityservice.repository.UserRepository;
@@ -44,17 +44,18 @@ public class UserService {
         if(!user.getPassword().equals(loginRequest.getPassword())){
             throw new BadRequestException("비밀번호를 확인해주세요");
         }
-        refreshTokenRepository.deleteByUserId(user.getId());
         var tokenResponse = generateAndSaveTokens(user);
         addTokenCookies(response, tokenResponse);
         return tokenResponse.accessToken();
     }
+
     @Transactional
     public void logout(HttpServletResponse response) {
         addTokenCookie(response, "accessToken", null, 0);
         addTokenCookie(response, "refreshToken", null, 0);
     }
 
+    @Transactional
     public TokenResponse refreshTokens(String refreshToken, HttpServletResponse response) {
         var parsedRefreshToken = jwtProvider.parse(refreshToken);
 
@@ -65,6 +66,11 @@ public class UserService {
         // AT 새로 발급 되면 RT도 재발급 받으면서 보안성을 높힌다
         String newAccessToken = jwtProvider.createAccessToken(entity.getUserId());
         String newRefreshToken = jwtProvider.createRefreshToken(entity.getUserId());
+
+        entity.setToken(newRefreshToken);
+        entity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
+        entity.setRevoked(false);
+        refreshTokenRepository.save(entity);
 
 
         addTokenCookie(response, "accessToken", newAccessToken, ACCESS_TOKEN_VALIDITY_SECONDS);
@@ -104,24 +110,27 @@ public class UserService {
     }
 
     private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from(name, value == null ? "" : value)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(maxAge)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
     }
     /** Access / Refresh 토큰을 새로 발급하고 DB에 저장 */
     private TokenResponse generateAndSaveTokens(User user) {
         String accessToken = jwtProvider.createAccessToken(user.getId());
         String refreshToken = jwtProvider.createRefreshToken(user.getId());
+        RefreshToken refreshEntity = refreshTokenRepository.findByUserId(user.getId()).orElseGet(RefreshToken::new);
 
-        RefreshToken refreshEntity = new RefreshToken();
         refreshEntity.setUserId(user.getId());
         refreshEntity.setToken(refreshToken);
         refreshEntity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
         refreshEntity.setRevoked(false);
-        refreshTokenRepository.save(refreshEntity);
 
+        refreshTokenRepository.save(refreshEntity);
         return new TokenResponse(accessToken, refreshToken);
     }
     public record TokenResponse(String accessToken, String refreshToken) { }
