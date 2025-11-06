@@ -27,12 +27,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
 
     private static final String[] EXCLUDED_PATHS = {
-            "/users/login", "/users/check-email", "/users/check-nickname"
+            "/users/login", "/users/signup", "/users/check-email", "/users/check-nickname"
     };
 
     // NOTE: 특정 URL은 토큰 검사 생략
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true; // preflight 통과 시키기
+        }
         String path = request.getRequestURI();
         return Arrays.stream(EXCLUDED_PATHS).anyMatch(path::startsWith);
     }
