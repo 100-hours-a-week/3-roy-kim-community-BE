@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost"}, methods = {RequestMethod.POST, RequestMethod.OPTIONS}, allowedHeaders = "*", allowCredentials = "true")
-
     @PostMapping
     public PostResponse create(@RequestBody CreatePostRequest request) {
         Post post = postService.create(request.authorId, request.title, request.content);

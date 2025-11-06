@@ -13,17 +13,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost"},
-        methods = {RequestMethod.POST,
-                RequestMethod.GET,
-                RequestMethod.OPTIONS},
-        allowedHeaders = "*",
-        allowCredentials = "true")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
