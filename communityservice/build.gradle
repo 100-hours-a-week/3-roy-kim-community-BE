@@ -43,6 +43,10 @@ dependencies {
 //	thymeleaf 관련
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	//세션 관련
+	implementation 'org.springframework.session:spring-session-jdbc'
+
 }
 
 tasks.named('test') {
