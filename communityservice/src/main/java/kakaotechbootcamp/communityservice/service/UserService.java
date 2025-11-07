@@ -1,21 +1,31 @@
 package kakaotechbootcamp.communityservice.service;
 
-import kakaotechbootcamp.communityservice.controller.UserController;
+import jakarta.servlet.http.HttpServletResponse;
 import kakaotechbootcamp.communityservice.dto.LoginRequest;
+import kakaotechbootcamp.communityservice.entity.RefreshToken;
 import kakaotechbootcamp.communityservice.exception.BadRequestException;
-import kakaotechbootcamp.communityservice.exception.ConflictException;
 import kakaotechbootcamp.communityservice.exception.UnprocessableEntityException;
+import kakaotechbootcamp.communityservice.jwt.JwtProvider;
+import kakaotechbootcamp.communityservice.repository.RefreshTokenRepository;
+import org.springframework.http.ResponseCookie;
 import org.springframework.transaction.annotation.Transactional;
 import kakaotechbootcamp.communityservice.entity.User;
 import kakaotechbootcamp.communityservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtProvider jwtProvider;
+
+    private static final int ACCESS_TOKEN_VALIDITY_SECONDS = 15 * 60;
+    private static final int REFRESH_TOKEN_VALIDITY_SECONDS = 14 * 24 * 3600;
 //    사용자 회원가입
     @Transactional
     public User signUp(String email,  String password, String passwordCheck, String nickname,String profilePicture) {
@@ -25,37 +35,47 @@ public class UserService {
             throw new UnprocessableEntityException("비밀번호 확인과 다릅니다");
 
         }
-        // 비밀번호 형식 검증: 8~20자, 대문자/소문자/숫자/특수문자 각각 최소 1개 포함
-        String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$";
-        if (!password.matches(passwordPattern)) {
-            throw new BadRequestException("비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.");
-        }
-        if (email == null || email.isBlank())
-            throw new BadRequestException("올바른 이메일 주소 형식을 입력해주세요 (예: example@example.com)");
-        if (password == null || password.isBlank())
-            throw new BadRequestException("비밀번호를 입력해주세요");
-        if (passwordCheck == null || passwordCheck.isBlank())
-            throw new BadRequestException("비밀번호를 한번더 입력해주세요");
-        if (nickname == null || nickname.isBlank())
-            throw new BadRequestException("닉네임을 입력해주세요");
-        if (nickname.length() > 10)
-            throw new BadRequestException("닉네임은 최대 10자 까지 작성 가능합니다");
-        if (nickname.chars().anyMatch(Character::isWhitespace))
-            throw new BadRequestException("띄어쓰기를 없애주세요");
-        if (userRepository.existsByEmail(email))
-            throw new ConflictException("중복된 이메일입니다");
-        if (userRepository.existsByNickname(nickname))
-            throw new ConflictException("중복된 닉네임입니다");
         return userRepository.save(user);
     }
-
-    public String login (LoginRequest loginRequest) {
+    @Transactional
+    public String login (LoginRequest loginRequest, HttpServletResponse response) {
         User user = userRepository.findByEmail(loginRequest.getEmail()).orElseThrow(() -> new BadRequestException("이메일을 확인해주세요"));
 
         if(!user.getPassword().equals(loginRequest.getPassword())){
             throw new BadRequestException("비밀번호를 확인해주세요");
         }
-        return "로그인 성공";
+        var tokenResponse = generateAndSaveTokens(user);
+        addTokenCookies(response, tokenResponse);
+        return tokenResponse.accessToken();
+    }
+
+    @Transactional
+    public void logout(HttpServletResponse response) {
+        addTokenCookie(response, "accessToken", null, 0);
+        addTokenCookie(response, "refreshToken", null, 0);
+    }
+
+    @Transactional
+    public TokenResponse refreshTokens(String refreshToken, HttpServletResponse response) {
+        var parsedRefreshToken = jwtProvider.parse(refreshToken);
+
+        RefreshToken entity = refreshTokenRepository.findByTokenAndRevokedFalse(refreshToken).orElse(null);
+        if( entity == null || entity.getExpiresAt().isBefore(Instant.now())){
+            return null;
+        }
+        // AT 새로 발급 되면 RT도 재발급 받으면서 보안성을 높힌다
+        String newAccessToken = jwtProvider.createAccessToken(entity.getUserId());
+        String newRefreshToken = jwtProvider.createRefreshToken(entity.getUserId());
+
+        entity.setToken(newRefreshToken);
+        entity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
+        entity.setRevoked(false);
+        refreshTokenRepository.save(entity);
+
+
+        addTokenCookie(response, "accessToken", newAccessToken, ACCESS_TOKEN_VALIDITY_SECONDS);
+        addTokenCookie(response, "refreshToken", newRefreshToken, REFRESH_TOKEN_VALIDITY_SECONDS);
+        return new TokenResponse(newAccessToken, newRefreshToken);
     }
 
     public User findById(Long id) {
@@ -84,4 +104,34 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    private void addTokenCookies(HttpServletResponse response, TokenResponse tokenResponse) {
+        addTokenCookie(response, "accessToken", tokenResponse.accessToken(), ACCESS_TOKEN_VALIDITY_SECONDS);
+        addTokenCookie(response, "refreshToken", tokenResponse.refreshToken(), REFRESH_TOKEN_VALIDITY_SECONDS);
+    }
+
+    private void addTokenCookie(HttpServletResponse response, String name, String value, int maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(name, value == null ? "" : value)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(maxAge)
+                .build();
+        response.addHeader("Set-Cookie", cookie.toString());
+    }
+    /** Access / Refresh 토큰을 새로 발급하고 DB에 저장 */
+    private TokenResponse generateAndSaveTokens(User user) {
+        String accessToken = jwtProvider.createAccessToken(user.getId());
+        String refreshToken = jwtProvider.createRefreshToken(user.getId());
+        RefreshToken refreshEntity = refreshTokenRepository.findByUserId(user.getId()).orElseGet(RefreshToken::new);
+
+        refreshEntity.setUserId(user.getId());
+        refreshEntity.setToken(refreshToken);
+        refreshEntity.setExpiresAt(Instant.now().plusSeconds(REFRESH_TOKEN_VALIDITY_SECONDS));
+        refreshEntity.setRevoked(false);
+
+        refreshTokenRepository.save(refreshEntity);
+        return new TokenResponse(accessToken, refreshToken);
+    }
+    public record TokenResponse(String accessToken, String refreshToken) { }
 }
