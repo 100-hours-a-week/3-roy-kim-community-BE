@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/posts/{postId}/comments")
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost"}, methods = {RequestMethod.POST, RequestMethod.OPTIONS}, allowedHeaders = "*")
 public class CommentController {
     private final CommentService commentService;
     private final CommentRepository commentRepository;
