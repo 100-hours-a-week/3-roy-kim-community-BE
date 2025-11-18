@@ -8,7 +8,7 @@ public class WebCorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://ec2-3-34-186-74.ap-northeast-2.compute.amazonaws.com:3000")
+                .allowedOrigins("http://community-elb-904870724.ap-northeast-2.elb.amazonaws.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .exposedHeaders("Authorization")

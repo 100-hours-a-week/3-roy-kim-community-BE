@@ -17,7 +17,7 @@ public class GlobalCorsFilterConfig {
         CorsConfiguration cors = new CorsConfiguration();
         cors.setAllowCredentials(true);
         cors.setAllowedOrigins(List.of(
-                "http://ec2-3-34-186-74.ap-northeast-2.compute.amazonaws.com:3000"
+                "http://community-elb-904870724.ap-northeast-2.elb.amazonaws.com"
         ));
         cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         cors.setAllowedHeaders(List.of("*"));
